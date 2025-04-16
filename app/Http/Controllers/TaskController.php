@@ -68,7 +68,7 @@ class TaskController extends Controller
             // Re-throw the validation exception so it can be handled by the handler
             throw $e;
         } catch (Exception $e) {
-            throw new DatabaseException('Failed to create task.', 500, $e);
+            throw new DatabaseException('Failed to create task. Error: ' . $e->getMessage());
         }
     }
 
@@ -85,7 +85,7 @@ class TaskController extends Controller
             $task->save();
             return response()->json($task);
         } catch (Exception $e) {
-            throw new DatabaseException('Failed to update task.', 500, $e);
+            throw new DatabaseException('Failed to update task. Error: ' . $e->getMessage());
         }
     }
 

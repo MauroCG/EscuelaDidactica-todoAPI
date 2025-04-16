@@ -5,6 +5,7 @@ GET http://127.0.0.1:8000/api/users
 ### Create new user
 POST http://127.0.0.1:8000/api/users
 Content-Type: application/json
+Accept: application/json
 
 {
     "name": "Mauricio Castaño Gómez",
@@ -17,16 +18,20 @@ GET http://127.0.0.1:8000/api/tasks
 
 
 ### Create new task
-GET http://127.0.0.1:8000/api/tasks
+POST http://127.0.0.1:8000/api/tasks
+Content-Type: application/json
+Accept: application/json
 
 {
-
+    "user_id": 1,
+    "title": "First task"
 }
 
 
 ### Mark a task as completed
 PUT http://127.0.0.1:8000/api/tasks/1
+Accept: application/json
 
 
 ### Delete a task as completed
-DELETE http://127.0.0.1:8000/api/tasks/1
+DELETE http://127.0.0.1:8000/api/tasks/2

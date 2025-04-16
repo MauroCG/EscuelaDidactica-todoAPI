@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->string('title');
             $table->boolean('completed')->default(false);
-            $table->timestamp('created_at')->useCurrent();
+            $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users');
         });
     }

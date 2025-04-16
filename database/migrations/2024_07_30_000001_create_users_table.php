@@ -11,7 +11,8 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id(); // This creates an auto-incrementing integer primary key column named 'id'
             $table->string('name'); // VARCHAR(255) by default
-            $table->string('email')->unique(); // VARCHAR(255) and adds a UNIQUE constraint        
+            $table->string('email')->unique(); // VARCHAR(255) and adds a UNIQUE constraint
+            $table->timestamps();
         });        
     }
 

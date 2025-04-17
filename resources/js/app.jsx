@@ -1,4 +1,4 @@
-import './bootstrap'; // Keep Laravel's bootstrap
+import './bootstrap'; // Laravel's bootstrap
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';

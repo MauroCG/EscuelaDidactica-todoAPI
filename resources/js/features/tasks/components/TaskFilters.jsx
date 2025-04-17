@@ -1,18 +1,15 @@
-import React from 'react';
-
+// For mapping filters styles
 const FILTERS = [
     { id: 'all', label: 'Todas', color: 'indigo' },
     { id: 'completed', label: 'Completadas', color: 'green' },
     { id: 'pending', label: 'Pendientes', color: 'yellow' },
 ];
 
-function TaskFilters({ activeFilter, onFilterChange }) {
+const TaskFilters = ({ activeFilter, onFilterChange }) => {
     const getButtonClasses = (filterId, color) => {
         const base = "px-4 py-1 rounded-md text-sm font-medium transition-colors duration-150 ease-in-out";
+        
         if (activeFilter === filterId) {
-            // Using dynamic classes requires Tailwind JIT or safelisting,
-            // or define the full class strings explicitly.
-            // Let's define explicitly for simplicity here:
             switch (color) {
                 case 'green': return `${base} bg-green-600 text-white shadow-sm`;
                 case 'yellow': return `${base} bg-yellow-500 text-white shadow-sm`;

@@ -1,15 +1,20 @@
-import React from 'react';
-import TaskItem from './TaskItem';
+import TaskItem from "./TaskItem";
 
-function TaskList({ tasks, onToggleComplete, onDelete, loading, error, activeFilter, originalTaskCount }) {
-
+const TaskList = ({
+    tasks,
+    onToggleComplete,
+    onDelete,
+    loading,
+    error,
+    activeFilter,
+    originalTaskCount,
+}) => {
     if (loading) {
         return <p className="text-gray-500">Loading tasks...</p>;
     }
 
-    // Display error only if not loading and no tasks are present due to error
     if (!loading && error && tasks.length === 0) {
-         return <p className="text-red-500 text-sm mb-4">{error}</p>;
+        return <p className="text-red-500 text-sm mb-4">{error}</p>;
     }
 
     if (!loading && tasks.length === 0) {
@@ -24,7 +29,7 @@ function TaskList({ tasks, onToggleComplete, onDelete, loading, error, activeFil
 
     return (
         <ul className="space-y-3 mb-6 max-h-80 overflow-y-auto">
-            {tasks.map(task => (
+            {tasks.map((task) => (
                 <TaskItem
                     key={task.id}
                     task={task}
@@ -34,6 +39,6 @@ function TaskList({ tasks, onToggleComplete, onDelete, loading, error, activeFil
             ))}
         </ul>
     );
-}
+};
 
 export default TaskList;

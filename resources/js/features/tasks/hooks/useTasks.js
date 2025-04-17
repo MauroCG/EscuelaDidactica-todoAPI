@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { getAllTasks, createTask, updateTask, deleteTask } from '../services/taskService';
 // If using Option 2 from service: import { getTasksByUser, ... } from '../services/taskService';
 
+// Custom hook for handling tasks logic (get, create, update and delete)
 export const useTasks = (userId) => {
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -13,39 +14,36 @@ export const useTasks = (userId) => {
             setTasks([]); // Clear tasks if no user ID
             return;
         }
+
         setLoading(true);
         setError(null);
+
         try {
-            // Using Option 1 (fetch all, filter client-side)
             const allTasks = await getAllTasks();
             const userTasks = allTasks.filter(task => task.user_id === userId);
             setTasks(userTasks);
-
-            // If using Option 2 (fetch by user)
-            // const userTasks = await getTasksByUser(userId);
-            // setTasks(userTasks);
-
         } catch (err) {
             console.error(`Error fetching tasks for user ${userId}:`, err);
-            setError("Failed to load tasks.");
-            setTasks([]); // Clear on error
+            setError("Failed to load tasks");
+            setTasks([]);
         } finally {
             setLoading(false);
         }
-    }, [userId]); // Re-fetch when userId changes
+    }, [userId]);
 
     const addTask = useCallback(async (taskData) => {
-        if (!userId) return; // Should not happen if form is disabled, but good check
+        if (!userId) return;
+
         setError(null);
+
         try {
-            // Ensure user_id is included
             const newTaskData = { ...taskData, user_id: userId };
             const newTask = await createTask(newTaskData);
             setTasks((prevTasks) => [...prevTasks, newTask]);
             return newTask;
         } catch (err) {
             console.error("Error creating task:", err);
-            setError("Failed to create task.");
+            setError("Failed to create task");
             throw err;
         }
     }, [userId]);
@@ -65,21 +63,18 @@ export const useTasks = (userId) => {
         );
 
         try {
-            // Send only the necessary update data
-            // Assuming PUT /api/tasks/{taskId} handles the toggle based on its logic
-            // If it expects the 'completed' field, send it:
-            // await updateTask(taskId, { completed: updatedCompletedStatus });
-            await updateTask(taskId, {}); // Sending empty object if PUT endpoint handles toggle itself
+            await updateTask(taskId);
         } catch (err) {
             console.error(`Error updating task ${taskId}:`, err);
-            setError("Failed to update task status.");
+            setError("Failed to update task status");
             setTasks(originalTasks); // Revert optimistic update
         }
-    }, [tasks]); // Dependency on tasks needed for optimistic revert
+    }, [tasks]);
 
     const removeTask = useCallback(async (taskId) => {
         setError(null);
         const originalTasks = tasks;
+
         // Optimistic update
         setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
 
@@ -87,18 +82,17 @@ export const useTasks = (userId) => {
             await deleteTask(taskId);
         } catch (err) {
             console.error(`Error deleting task ${taskId}:`, err);
-            setError("Failed to delete task.");
+            setError("Failed to delete task");
             setTasks(originalTasks); // Revert optimistic update
         }
-    }, [tasks]); // Dependency on tasks needed for optimistic revert
+    }, [tasks]);
 
-    // Fetch tasks when the hook mounts or userId changes
     useEffect(() => {
         fetchTasks();
-    }, [fetchTasks]); // fetchTasks depends on userId
+    }, [fetchTasks]);
 
-    // Calculate filtered tasks using useMemo for performance
-    const filteredTasks = useMemo(() => {
+    // Calculate filtered tasks
+    const filterTasks = useMemo(() => {
         if (activeFilter === 'completed') {
             return tasks.filter((task) => task.completed);
         }
@@ -109,8 +103,8 @@ export const useTasks = (userId) => {
     }, [tasks, activeFilter]); // Recalculate only when tasks or filter change
 
     return {
-        tasks: filteredTasks, // Return filtered tasks for rendering
-        originalTaskCount: tasks.length, // Useful for "No tasks found" message logic
+        tasks: filterTasks, 
+        originalTaskCount: tasks.length,
         loading,
         error,
         activeFilter,
@@ -119,6 +113,6 @@ export const useTasks = (userId) => {
         addTask,
         toggleTaskCompletion,
         removeTask,
-        setError, // Allow clearing error from component
+        setError, // Allow clearing error if needed
     };
 };

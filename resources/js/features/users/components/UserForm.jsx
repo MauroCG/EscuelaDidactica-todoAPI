@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
-function UserForm({ onSubmit, error, isLoading }) { // Accept isLoading if you add it to useUsers.addUser
+const UserForm = ({ onSubmit, error, isLoading }) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
 
+    // Creation of the user
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Validations
         if (!name || !email) return;
+
         try {
             await onSubmit({ name, email });
-            setName(''); // Clear form on success
+            setName('');
             setEmail('');
         } catch (err) {
-            // Error is handled by the hook and displayed via the error prop
             console.log("User creation failed in form component");
         }
     };
@@ -33,7 +36,7 @@ function UserForm({ onSubmit, error, isLoading }) { // Accept isLoading if you a
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Tu nombre"
                     required
-                    disabled={isLoading} // Disable while submitting
+                    disabled={isLoading}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:opacity-50"
                 />
             </div>
@@ -48,13 +51,13 @@ function UserForm({ onSubmit, error, isLoading }) { // Accept isLoading if you a
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="user@example.com"
                     required
-                    disabled={isLoading} // Disable while submitting
+                    disabled={isLoading}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:opacity-50"
                 />
             </div>
             <button
                 type="submit"
-                disabled={isLoading} // Disable while submitting
+                disabled={isLoading}
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out disabled:opacity-50"
             >
                 {isLoading ? 'Agregando...' : 'Agregar Usuario'}

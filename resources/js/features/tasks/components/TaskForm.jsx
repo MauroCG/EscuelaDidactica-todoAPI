@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
-function TaskForm({ onSubmit, error, isLoading }) { // Accept isLoading if added to useTasks.addTask
+const TaskForm = ({ onSubmit, error, isLoading }) => {
     const [title, setTitle] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         if (!title.trim()) return;
+
         try {
             await onSubmit({ title });
-            setTitle(''); // Clear form on success
+            setTitle('');
         } catch (err) {
-            // Error handled by hook
              console.log("Task creation failed in form component");
         }
     };
@@ -20,7 +21,7 @@ function TaskForm({ onSubmit, error, isLoading }) { // Accept isLoading if added
             <h3 className="text-lg font-medium mb-2 text-gray-600">
                 Agregar Nueva Tarea
             </h3>
-            {error && <p className="text-red-500 text-xs mb-2">{error}</p>} {/* Display error above form */}
+            {error && <p className="text-red-500 text-xs mb-2">{error}</p>}
             <div className="flex items-center gap-3">
                 <input
                     type="text"

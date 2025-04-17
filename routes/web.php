@@ -2,8 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 
-// Other web routes (if any) can go above
-
 Route::get('/{any?}', function () {
-    return view('app'); // Return the single Blade file
-})->where('any', '.*'); // Matches everything
+    return view('app'); // Entry point of the react app
+})->where('any', '.*'); // Matches everything (api routes are listed first in app bootstrap)

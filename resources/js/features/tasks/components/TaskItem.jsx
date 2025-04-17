@@ -1,6 +1,4 @@
-import React from 'react';
-
-function TaskItem({ task, onToggleComplete, onDelete }) {
+const TaskItem = ({ task, onToggleComplete, onDelete }) => {
     return (
         <li
             className="flex items-center justify-between p-3 bg-gray-50 rounded-md border border-gray-200 hover:bg-gray-100 transition-colors duration-150"

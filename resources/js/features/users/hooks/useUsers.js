@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getUsers, createUser } from '../services/userService';
 
+// Custom hook for handling users logic (get and create users)
 export const useUsers = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -30,9 +31,8 @@ export const useUsers = () => {
         } catch (err) {
             console.error("Error creating user:", err);
             setError("Failed to create user.");
-            throw err; // Re-throw error for the component to handle if needed
+            throw err;
         }
-        // Note: Loading state for add operation could be added if desired
     }, []);
 
     // Fetch users on initial load

@@ -81,7 +81,7 @@ class TaskController extends Controller
     public function update(Task $task)
     {
         try {
-            $task->completed = true;
+            $task->completed = !$task->completed;
             $task->save();
             return response()->json($task);
         } catch (Exception $e) {

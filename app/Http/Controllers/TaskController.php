@@ -23,7 +23,8 @@ class TaskController extends Controller
     public function index()
     {
         try {
-            return response()->json(Task::all());
+            return response()->json(Task::orderBy('created_at', 'desc')->get());
+
         } catch (Exception $e) {
             throw new DatabaseException('Failed to retrieve tasks.', 500, $e);
         }

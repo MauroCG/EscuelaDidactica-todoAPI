@@ -107,3 +107,20 @@ En cuanto a los casos de uso potenciales, realmente son muchos y varian según a
 
     - Para esto simplemente se debe ir a administración del sitió > cursos > restaurar curso. Y luego seguir los pasos correspondientes
     ![Restauración de curso](./escuela_didactica/parte_7/12.png)
+
+    - Durante el proceso de restauración fue necesario revisar los logs de Apache, puesto que el proceso no continuaba. Había un error sobre el tamaño máximo permitido para archivos y peticiones POST, por lo que fue necesario ajustar nuevamente la configuración en php.ini sobre el tamaño máximo (post_max_size y upload_max_filesize).
+
+    - Luego de ocmpletar el proceso de restauración el estado permaneció como "pendiente", por lo que fue necesario ejecutar el cron manualmente.
+    `xampp/php/php.exe xampp/htdocs/moodle/admin/cli/cron.php`
+
+- Solución al error de base de datos
+
+    - Al abrir el curso Sarlaft, en el bloque estado de finalización, vista general de estudiantes, sale el error esperado de base de datos
+    ![Bloque Estado de Finalización](./escuela_didactica/parte_7/13.png)
+    ![Error de base de datos](./escuela_didactica/parte_7/14.png)
+
+    - Activación del modo depuración para ver el error específico
+    ![Detalle del error ocurrido](./escuela_didactica/parte_7/15.png)
+
+    - La solución al error fue simplemente eliminar la parte que hacia referencia a la columna inexistente dentro de la consulta SQL, es decir, r.capabilite
+    ![Solución al error](./escuela_didactica/parte_7/16.png)

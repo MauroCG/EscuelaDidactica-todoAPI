@@ -63,3 +63,32 @@ En cuanto a los casos de uso potenciales, realmente son muchos y varian según a
 - Transformación de texto a lenguaje de señas como función de accesibilidad.
 
 ### 7. Moodle y Error en Plugin Estado de Finalización
+
+- Instalación de Moodle 4.5
+
+    - Descargar Moodle desde este [link](https://download.moodle.org/download.php/direct/stable405/moodle-latest-405.zip)
+
+    - Descomprimir el archivo descargado en el servidor de XAMPP (Si no se tenía XAMPP previamente instalado, se debe descargar su instalador y ejecutarlos)
+    ![Archivo descomprimido en la carpeta del servidor XAMPP](./escuela_didactica/parte_7/1.png)
+    ![Contenido de la carpeta moodle](./escuela_didactica/parte_7/2.png)
+
+    - Crear base de datos usando phpMyAdmin (para esto se debe iniciar el servidor de XAMPP, iniciar Apache, MySQL, y luego acceder como admin a MySQL)
+    ![Iniciando servicios en XAMPP](./escuela_didactica/parte_7/3.png)
+    ![Creando base de datos](./escuela_didactica/parte_7/4.png)
+
+    - Actualizar el archivo `config-dist.php` con los valores de conexión a la base de datos (el archivo esta dentro de la carpeta `moodle` descomprimida en la carpeta `xampp`)
+    ![Archivo config-dist.php](./escuela_didactica/parte_7/5.png)
+
+    - Copiar la carpeta `moodle` y ponerla dentro de la carpeta `htdocs`
+    ![Copia de la carpeta moodle](./escuela_didactica/parte_7/6.png)
+
+    - Ingrasar a `moodle` en la dirección `localhost/moodle`, y seguir los pasos d einstalación
+    ![Instalación de Moodle](./escuela_didactica/parte_7/7.png)
+
+        - Si sale algún error como requerir alguna extensión de PHP se debe detener el servidor de Apache, abrir el archivo de ocnfiguración `php.ini` (desde XAMPP, dando click en `config` de Apache) y descomentar la línea correspondiente de la extensión requerida (quitar punto y coma)
+        ![Activando extensión zip en php.ini](./escuela_didactica/parte_7/8.png)
+
+        - Si la versión de XAMPP utilizada no cuenta con la versión adecuada de MySQL (MariaDB) es necesario instalar una nueva versión de MariaDB por aparte. Para esto se ha de descargar la versión correspondiente, hacer que se ejecute en un puerto distinto, detener la versión de MySQL de XAMPP, actualizar los datos de conexión en config.php, reiniciar y recargar el proceso de instalación de Moodle.
+
+    - Instalación de Moodel completada
+    ![Instalación de Moodle completada](./escuela_didactica/parte_7/9.png)

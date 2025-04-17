@@ -1,6 +1,6 @@
 # Prueba Técnica para Desarrollador Full Stack en Escuela Didáctica
 
-La descripción de la prueba técnica se encuentra en el archivo [Descripción Prueba Técnica](./escuela_didactica/nombre_del_archivo.pdf).
+La descripción de la prueba técnica se encuentra en el archivo [Descripción Prueba Técnica](./escuela_didactica/technical_assessment.pdf).
 
 ## Para ejecutar la app
 

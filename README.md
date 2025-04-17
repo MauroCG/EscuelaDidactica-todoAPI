@@ -92,3 +92,18 @@ En cuanto a los casos de uso potenciales, realmente son muchos y varian según a
 
     - Instalación de Moodel completada
     ![Instalación de Moodle completada](./escuela_didactica/parte_7/9.png)
+
+- Instalación de Plugin `completion_progress`
+
+    - Se debe descargar y descomprimir el plugin tipo bloque
+
+    - Luego se debe ubicar la carpeta descomprimida dentro de la carpeta `blocks` que esta en `xampp/htdocs/`
+    ![Contenido de la carpeta blocks](./escuela_didactica/parte_7/10.png)
+
+    - Al volver a iniciar Moodle se detectará el nuevo plugin y se mostrará el botón para actualizar la base de datos
+    ![Plugin actualizado](./escuela_didactica/parte_7/11.png)
+
+- Restaurar curso demo
+
+    - Para esto simplemente se debe ir a administración del sitió > cursos > restaurar curso. Y luego seguir los pasos correspondientes
+    ![Restauración de curso](./escuela_didactica/parte_7/12.png)

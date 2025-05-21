@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useState, useCallback } from "react"; // Added useCallback
 import { useUsers } from "../features/users/hooks/useUsers";
 import { useTasks } from "../features/tasks/hooks/useTasks";
-import UserForm from "../features/users/components/UserForm";
-import UserList from "../features/users/components/UserList";
-import TaskFilters from "../features/tasks/components/TaskFilters";
-import TaskList from "../features/tasks/components/TaskList";
-import TaskForm from "../features/tasks/components/TaskForm";
+// import UserForm from "../features/users/components/UserForm"; // No longer directly used
+// import UserList from "../features/users/components/UserList"; // No longer directly used
+// import TaskFilters from "../features/tasks/components/TaskFilters"; // No longer directly used
+// import TaskList from "../features/tasks/components/TaskList"; // No longer directly used
+// import TaskForm from "../features/tasks/components/TaskForm"; // No longer directly used
+import { ThemeProvider } from '../context/ThemeContext';
+import ThemeSwitcher from './ThemeSwitcher';
+import UserSection from '../features/users/components/UserSection'; // Added
+import TaskSection from '../features/tasks/components/TaskSection'; // Added
 
 
 const App = () => {
@@ -23,11 +27,16 @@ const App = () => {
     // --- Task Feature ---
     const {
         tasks: filteredTasks,
-        originalTaskCount,
-        loading: loadingTasks,
+        // originalTaskCount, // Replaced by totalTasks
+        totalTasks,
+        loading: loadingTasks, // This is the initial page loading
+        isLoadingMore,
         error: taskError,
         activeFilter,
         setActiveFilter,
+        currentPage,
+        totalPages,
+        loadMoreTasks,
         addTask,
         toggleTaskCompletion,
         removeTask,
@@ -35,101 +44,70 @@ const App = () => {
     } = useTasks(selectedUser?.id);
 
     // Selects a user from the list to show their tasks
-    const handleUserSelect = (user) => {
+    const handleUserSelect = useCallback((user) => {
         setSelectedUser(user);
-        setTaskError(null);
-    };
+        setTaskError(null); // setTaskError from useTasks is stable
+    }, [setTaskError]); // Include setTaskError if it's from useState and not from useTasks hook directly
 
     // Creates a new user
-    const handleUserSubmit = async (userData) => {
-        // Clear previous user error before attempting to add
-        setUserError(null);
-
+    const handleUserSubmit = useCallback(async (userData) => {
+        setUserError(null); // setUserError from useUsers is stable
         try {
-            await addUser(userData);
+            await addUser(userData); // addUser from useUsers is memoized
         } catch (err) {
             console.error("User creation failed in App component");
         }
-    };
+    }, [addUser, setUserError]);
 
     // Creates a new task
-    const handleTaskSubmit = async (taskData) => {
-        // Clear previous task error before attempting to add
-        setTaskError(null);
-
+    const handleTaskSubmit = useCallback(async (taskData) => {
+        setTaskError(null); // setTaskError from useTasks is stable
         try {
-            await addTask(taskData);
+            await addTask(taskData); // addTask from useTasks is memoized
         } catch (err) {
             console.error("Task creation failed in App component");
         }
-    };
+    }, [addTask, setTaskError]);
 
     return (
-        <div className="container mx-auto p-4 md:p-8 max-w-4xl font-sans">
-            <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
-                TODO App
-            </h1>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {/* User Section */}
-                <div className="md:col-span-1 bg-white p-6 rounded-lg shadow-md flex flex-col">
-                    <h2 className="text-xl font-semibold mb-4 text-gray-700">
-                        Usuarios
-                    </h2>
-                    <UserForm onSubmit={handleUserSubmit} error={userError} />
-                    <div className="border-t pt-4 mt-4 flex-grow flex flex-col">
-                        <h3 className="text-lg font-medium mb-2 text-gray-600">
-                            Selecciona un usuario
-                        </h3>
-                        <div className="flex-grow">
-                            <UserList
-                                users={users}
-                                selectedUser={selectedUser}
-                                onSelectUser={handleUserSelect}
-                                loading={loadingUsers}
-                                error={userError}
-                            />
-                        </div>
-                    </div>
+        <ThemeProvider> {/* Added ThemeProvider wrapper */}
+            <div className="min-h-screen container mx-auto p-4 sm:p-6 md:p-8 max-w-5xl font-sans bg-slate-100 dark:bg-slate-950"> {/* Changed bg, padding, max-width */}
+                <div className="flex justify-between items-center mb-10 md:mb-12"> {/* Increased margin bottom */}
+                    <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-slate-50"> {/* Changed size and color */}
+                        TODO App
+                    </h1>
+                    <ThemeSwitcher /> {/* Added ThemeSwitcher */}
                 </div>
 
-                {/* Task Section */}
-                <div className="md:col-span-2 bg-white p-6 rounded-lg shadow-md">
-                    <h2 className="text-xl font-semibold mb-4 text-gray-700">
-                        {selectedUser
-                            ? `Tareas de ${selectedUser.name}`
-                            : "Selecciona un usuario"}
-                    </h2>
-
-                    {selectedUser ? (
-                        <>
-                            <TaskFilters
-                                activeFilter={activeFilter}
-                                onFilterChange={setActiveFilter}
-                            />
-                            <TaskList
-                                tasks={filteredTasks}
-                                onToggleComplete={toggleTaskCompletion}
-                                onDelete={removeTask}
-                                loading={loadingTasks}
-                                error={taskError}
-                                activeFilter={activeFilter}
-                                originalTaskCount={originalTaskCount}
-                            />
-                            <TaskForm
-                                onSubmit={handleTaskSubmit}
-                                error={taskError}
-                            />{" "}
-                        </>
-                    ) : (
-                        <p className="text-gray-500">
-                            Por favor selecciona un usuario de la lista para ver
-                            y administrar sus tareas.
-                        </p>
-                    )}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <UserSection
+                        users={users}
+                        loadingUsers={loadingUsers}
+                        userError={userError}
+                        onUserSubmit={handleUserSubmit}
+                        selectedUser={selectedUser}
+                        onUserSelect={handleUserSelect}
+                    />
+                    <TaskSection
+                        selectedUser={selectedUser}
+                        tasks={filteredTasks}
+                        loadingTasks={loadingTasks} // For initial load indication
+                        taskError={taskError}
+                        activeFilter={activeFilter}
+                        onFilterChange={setActiveFilter}
+                        onTaskSubmit={handleTaskSubmit}
+                        onToggleComplete={toggleTaskCompletion}
+                        onDeleteTask={removeTask}
+                        // originalTaskCount={originalTaskCount} // Replaced
+                        totalTasks={totalTasks}
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        isLoadingMore={isLoadingMore}
+                        loadMoreTasks={loadMoreTasks}
+                    />
                 </div>
             </div>
-        </div>
+        </ThemeProvider>
     );
 }
 

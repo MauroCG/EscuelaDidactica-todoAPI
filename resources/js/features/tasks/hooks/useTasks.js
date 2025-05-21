@@ -1,118 +1,149 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { getAllTasks, createTask, updateTask, deleteTask } from '../services/taskService';
-// If using Option 2 from service: import { getTasksByUser, ... } from '../services/taskService';
+import { getTasks, createTask, updateTask, deleteTask } from '../services/taskService'; // Renamed getAllTasks to getTasks
 
-// Custom hook for handling tasks logic (get, create, update and delete)
 export const useTasks = (userId) => {
-    const [tasks, setTasks] = useState([]);
+    const [loadedTasks, setLoadedTasks] = useState([]); // All tasks loaded for the current user, for all pages
     const [loading, setLoading] = useState(false);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [error, setError] = useState(null);
-    const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'completed', 'pending'
+    const [activeFilter, setActiveFilter] = useState('all');
+    
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalTasksFromServer, setTotalTasksFromServer] = useState(0);
 
-    const fetchTasks = useCallback(async () => {
+    const fetchUserTasks = useCallback(async (pageToFetch = 1) => {
         if (!userId) {
-            setTasks([]); // Clear tasks if no user ID
+            setLoadedTasks([]);
+            setCurrentPage(1);
+            setTotalPages(1);
+            setTotalTasksFromServer(0);
             return;
         }
 
-        setLoading(true);
+        if (pageToFetch === 1) {
+            setLoading(true);
+        } else {
+            setIsLoadingMore(true);
+        }
         setError(null);
 
         try {
-            const allTasks = await getAllTasks();
-            const userTasks = allTasks.filter(task => task.user_id === userId);
-            setTasks(userTasks);
+            const response = await getTasks(userId, pageToFetch); // Use new service
+            if (pageToFetch === 1) {
+                setLoadedTasks(response.data || []);
+            } else {
+                setLoadedTasks((prevTasks) => [...prevTasks, ...(response.data || [])]);
+            }
+            setCurrentPage(response.current_page);
+            setTotalPages(response.last_page || 1);
+            setTotalTasksFromServer(response.total || 0);
         } catch (err) {
-            console.error(`Error fetching tasks for user ${userId}:`, err);
+            console.error(`Error fetching tasks for user ${userId}, page ${pageToFetch}:`, err);
             setError("Failed to load tasks");
-            setTasks([]);
+            // Do not clear tasks on error if loading more, to keep existing data
+            if (pageToFetch === 1) setLoadedTasks([]);
         } finally {
-            setLoading(false);
+            if (pageToFetch === 1) {
+                setLoading(false);
+            } else {
+                setIsLoadingMore(false);
+            }
         }
     }, [userId]);
+
+    // Initial fetch or fetch when userId changes
+    useEffect(() => {
+        fetchUserTasks(1); // Fetch first page
+    }, [userId, fetchUserTasks]); // fetchUserTasks is stable due to useCallback with only userId as dep
+
+    const loadMoreTasks = useCallback(() => {
+        if (currentPage < totalPages && !isLoadingMore && !loading) {
+            fetchUserTasks(currentPage + 1);
+        }
+    }, [currentPage, totalPages, isLoadingMore, loading, fetchUserTasks]);
+
+    // Task mutation handlers: refetch first page for simplicity for now
+    // A more advanced implementation might update cache or refetch current page(s)
+    const refetchFirstPage = () => {
+        fetchUserTasks(1);
+    };
 
     const addTask = useCallback(async (taskData) => {
         if (!userId) return;
-
         setError(null);
-
         try {
             const newTaskData = { ...taskData, user_id: userId };
-            const newTask = await createTask(newTaskData);
-            setTasks((prevTasks) => [...prevTasks, newTask]);
-            return newTask;
+            await createTask(newTaskData);
+            refetchFirstPage(); // Refetch to update list and total count
         } catch (err) {
             console.error("Error creating task:", err);
-            setError("Failed to create task");
-            throw err;
+            setError("Failed to create task. Please try again.");
+            throw err; // Re-throw for form to handle
         }
-    }, [userId]);
+    }, [userId, fetchUserTasks]); // Added fetchUserTasks to deps for refetchFirstPage
 
     const toggleTaskCompletion = useCallback(async (taskId, currentCompletedStatus) => {
         setError(null);
-        const updatedCompletedStatus = !currentCompletedStatus;
-
-        // Optimistic update
-        const originalTasks = tasks;
-        setTasks((prevTasks) =>
-            prevTasks.map((task) =>
-                task.id === taskId
-                    ? { ...task, completed: updatedCompletedStatus }
-                    : task
+        const originalTasks = [...loadedTasks]; // Keep a copy of all loaded tasks
+        
+        // Optimistic update on the full list
+        setLoadedTasks(prevTasks =>
+            prevTasks.map(task =>
+                task.id === taskId ? { ...task, completed: !currentCompletedStatus } : task
             )
         );
 
         try {
-            await updateTask(taskId);
+            await updateTask(taskId); // Backend toggles, no data needed for this specific update
+            // Optionally, refetch current page(s) if server might have other changes: refetchFirstPage();
         } catch (err) {
             console.error(`Error updating task ${taskId}:`, err);
-            setError("Failed to update task status");
-            setTasks(originalTasks); // Revert optimistic update
+            setError("Failed to update task. Please try again.");
+            setLoadedTasks(originalTasks); // Revert optimistic update
         }
-    }, [tasks]);
+    }, [loadedTasks, fetchUserTasks]); // Added fetchUserTasks for potential refetch
 
     const removeTask = useCallback(async (taskId) => {
         setError(null);
-        const originalTasks = tasks;
-
-        // Optimistic update
-        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
-
+        // No optimistic update here for simplicity with pagination, just refetch
         try {
             await deleteTask(taskId);
+            refetchFirstPage(); // Refetch to update list and total count
         } catch (err) {
             console.error(`Error deleting task ${taskId}:`, err);
-            setError("Failed to delete task");
-            setTasks(originalTasks); // Revert optimistic update
+            setError("Failed to delete task. Please try again.");
         }
-    }, [tasks]);
+    }, [fetchUserTasks]); // Added fetchUserTasks
 
-    useEffect(() => {
-        fetchTasks();
-    }, [fetchTasks]);
-
-    // Calculate filtered tasks
-    const filterTasks = useMemo(() => {
+    // Client-side filtering on the currently loaded tasks
+    const filteredTasks = useMemo(() => {
         if (activeFilter === 'completed') {
-            return tasks.filter((task) => task.completed);
+            return loadedTasks.filter((task) => task.completed);
         }
         if (activeFilter === 'pending') {
-            return tasks.filter((task) => !task.completed);
+            return loadedTasks.filter((task) => !task.completed);
         }
-        return tasks; // 'all'
-    }, [tasks, activeFilter]); // Recalculate only when tasks or filter change
+        return loadedTasks; // 'all'
+    }, [loadedTasks, activeFilter]);
 
     return {
-        tasks: filterTasks, 
-        originalTaskCount: tasks.length,
-        loading,
+        tasks: filteredTasks, // These are the tasks to display (loaded & client-filtered)
+        // originalTaskCount: totalTasksFromServer, // Renamed for clarity
+        totalTasks: totalTasksFromServer,
+        loading, // Initial page load
+        isLoadingMore, // Loading subsequent pages
         error,
         activeFilter,
         setActiveFilter,
-        fetchTasks, // Expose if manual refresh is needed
+        // fetchTasks: fetchUserTasks, // Expose main fetch if needed, or specific page fetch
+        loadMoreTasks,
+        currentPage,
+        totalPages,
         addTask,
         toggleTaskCompletion,
         removeTask,
-        setError, // Allow clearing error if needed
+        setError,
     };
 };

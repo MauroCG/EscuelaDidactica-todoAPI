@@ -1,38 +1,33 @@
-// For mapping filters styles
-const FILTERS = [
-    { id: 'all', label: 'Todas', color: 'indigo' },
-    { id: 'completed', label: 'Completadas', color: 'green' },
-    { id: 'pending', label: 'Pendientes', color: 'yellow' },
+import React from 'react'; // Added import
+
+const FILTERS_CONFIG = [
+    { id: 'all', label: 'Todas' },
+    { id: 'completed', label: 'Completadas' },
+    { id: 'pending', label: 'Pendientes' },
 ];
 
 const TaskFilters = ({ activeFilter, onFilterChange }) => {
-    const getButtonClasses = (filterId, color) => {
-        const base = "px-4 py-1 rounded-md text-sm font-medium transition-colors duration-150 ease-in-out";
-        
-        if (activeFilter === filterId) {
-            switch (color) {
-                case 'green': return `${base} bg-green-600 text-white shadow-sm`;
-                case 'yellow': return `${base} bg-yellow-500 text-white shadow-sm`;
-                default: return `${base} bg-indigo-600 text-white shadow-sm`; // indigo for 'all'
-            }
-        } else {
-            return `${base} bg-gray-100 text-gray-600 hover:bg-gray-200`;
-        }
-    };
+    const baseButtonClasses = "py-2 px-3 sm:px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-slate-800/50 transition-colors duration-150 ease-in-out";
 
     return (
-        <div className="flex justify-center space-x-3 mb-5 border-b pb-4">
-            {FILTERS.map(filter => (
-                <button
-                    key={filter.id}
-                    onClick={() => onFilterChange(filter.id)}
-                    className={getButtonClasses(filter.id, filter.color)}
-                >
-                    {filter.label}
-                </button>
-            ))}
+        <div className="flex justify-center space-x-2 sm:space-x-3 mb-6 border-b border-slate-300 dark:border-slate-700 pb-4">
+            {FILTERS_CONFIG.map(filter => {
+                const isActive = activeFilter === filter.id;
+                const activeClasses = "bg-indigo-600 text-white hover:bg-indigo-700";
+                const inactiveClasses = "bg-slate-200 hover:bg-slate-300 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200";
+                
+                return (
+                    <button
+                        key={filter.id}
+                        onClick={() => onFilterChange(filter.id)}
+                        className={`${baseButtonClasses} ${isActive ? activeClasses : inactiveClasses}`}
+                    >
+                        {filter.label}
+                    </button>
+                );
+            })}
         </div>
     );
 }
 
-export default TaskFilters;
+export default React.memo(TaskFilters); // Wrapped with React.memo
